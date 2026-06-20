@@ -2,18 +2,15 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
 use Illuminate\Database\Seeder;
+use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 
-class DatabaseSeeder extends Seeder
+class UserSeeder extends Seeder
 {
-    /**
-     * Seed the application's database.
-     */
-    public function run(): void
+    public function run()
     {
-        //  SEEDER para rol solicitante
+        // Usuario Solicitante
         User::create([
             'name' => 'Solicitante',
             'email' => 'solicitante@mail.com',
@@ -21,7 +18,7 @@ class DatabaseSeeder extends Seeder
             'role' => 'solicitante',
         ]);
 
-        // SEEDER para rol revisor
+        // Usuario Revisor
         User::create([
             'name' => 'Revisor',
             'email' => 'revisor@mail.com',
