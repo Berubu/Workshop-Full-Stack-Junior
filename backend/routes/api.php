@@ -5,13 +5,14 @@ use App\Http\Controllers\CatalogoController;
 use App\Http\Controllers\RequestController;
 use App\Http\Controllers\AuthController;
 
-
 Route::post('/login', [AuthController::class, 'login']); 
-Route::middleware('auth:sanctum')->group(function () { // Rutas Protegidas por Sanctum
+
+Route::middleware('auth:sanctum')->group(function () { // rutas protegidas por sanctum
     Route::get('/catalogs/countries', [CatalogoController::class, 'getCountries']);
-    Route::get('/catalogs/neighborhoods/{country}/{cp}', [CatalogoController::class, 'getNeighborhoods']);
+    Route::get('/catalogs/location/{country_code}/{postal_code}', [CatalogoController::class, 'getNeighborhoods']);
     
-    // CRUD de solicitudes protegido
-    Route::get('/requests', [RequestController::class, 'index']); // Listar
-    Route::post('/requests', [RequestController::class, 'store']); // Crear
+    // CRUD de solicitudes
+    Route::get('/requests', [RequestController::class, 'index']); // listar
+    Route::post('/requests', [RequestController::class, 'store']); // crear
+    Route::put('/requests/{id}', [RequestController::class, 'update']); // 👑 ACTUALIZAR ESTATUS REAL
 });

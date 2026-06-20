@@ -2,27 +2,42 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Services\SoapCountryServices;
-use App\Services\Zippopotam;
+use App\Services\ExternalCatalogService;
+use Illuminate\Http\JsonResponse;
+use OpenApi\Attributes as OA;
 
 class CatalogoController extends Controller
 {
-    protected $soapCountryService;
-    protected $zippopotam;
+    protected ExternalCatalogService $catalogService;
 
-    public function __construct(SoapCountryServices $soapService, Zippopotam $zippopotam)
+    public function __construct(ExternalCatalogService $catalogService)
     {
-        $this->soapCountryService = $soapService;
-        $this->zippopotam = $zippopotam;
-    }
-    public function getCountries(){
-        $countries=$this->soapCountryService->getCountries();
-        return response()->json($countries);
-    } //endpoind de soap
-    public function getNeighborhoods($countryCode, $postaleCode){
-        $neightborhoods=$this->zippopotam->getNeighborhood($countryCode, $postaleCode);
-        return response()->json($neightborhoods);
+        $this->catalogService = $catalogService;
     }
 
+    #[OA\Get(
+        path: "/api/catalogs/countries",
+        summary: "Obtener listado de países desde SOAP",
+        security: [["sanctum" => []]],
+        tags: ["Catálogos"]
+    )]
+    #[OA\Response(response: 200, description: "Lista de países cargada con éxito")]
+    public function getCountries(): JsonResponse
+    {
+        $data = $this->catalogService->getCountriesFromSoap();
+        return response()->json($data, 200);
+    }
+
+    #[OA\Get(
+        path: "/api/catalogs/location/{country_code}/{postal_code}",
+        summary: "Obtener colonias desde API externa REST",
+        security: [["sanctum" => []]],
+        tags: ["Catálogos"]
+    )]
+    #[OA\Response(response: 200, description: "Lista de colonias cargada con éxito")]
+    public function getNeighborhoods($country_code, $postal_code): JsonResponse
+    {
+        $data = $this->catalogService->getNeighborhoodsFromRest($country_code, $postal_code);
+        return response()->json($data, 200);
+    }
 }
