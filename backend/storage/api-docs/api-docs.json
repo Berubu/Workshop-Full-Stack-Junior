@@ -1,0 +1,320 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "API de Gestión de Solicitudes Ciudadanas",
+        "description": "Documentación de los endpoints del Workshop Técnico de Gobierno Digital",
+        "contact": {
+            "email": "soporte@gobierno.gob.mx"
+        },
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:8000/api",
+            "description": "Servidor de Desarrollo Local"
+        }
+    ],
+    "paths": {
+        "/login": {
+            "post": {
+                "tags": [
+                    "Autenticación"
+                ],
+                "summary": "Autenticación de usuarios",
+                "description": "Valida las credenciales del ciudadano o revisor y retorna un token Sanctum real.",
+                "operationId": "2dd578ff7aba2721293dac66833b27d1",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "solicitante@mail.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "123456"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Autenticación exitosa",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "token": {
+                                            "type": "string",
+                                            "example": "1|kHz7b..."
+                                        },
+                                        "user": {
+                                            "properties": {
+                                                "name": {
+                                                    "type": "string",
+                                                    "example": "Solicitante"
+                                                },
+                                                "email": {
+                                                    "type": "string",
+                                                    "example": "solicitante@mail.com"
+                                                },
+                                                "role": {
+                                                    "type": "string",
+                                                    "example": "solicitante"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Credenciales incorrectas"
+                    }
+                }
+            }
+        },
+        "/api/catalogs/countries": {
+            "get": {
+                "tags": [
+                    "Catálogos"
+                ],
+                "summary": "Obtener listado de países desde SOAP",
+                "operationId": "d1dcfb3e077f3ba4d1aa463be304ebeb",
+                "responses": {
+                    "200": {
+                        "description": "Lista de países cargada con éxito"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/catalogs/location/{country_code}/{postal_code}": {
+            "get": {
+                "tags": [
+                    "Catálogos"
+                ],
+                "summary": "Obtener colonias desde API externa REST",
+                "operationId": "5d253feb80866a2ade924ebc319ab6af",
+                "responses": {
+                    "200": {
+                        "description": "Lista de colonias cargada con éxito"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/requests": {
+            "get": {
+                "tags": [
+                    "Solicitudes"
+                ],
+                "summary": "Listar solicitudes ciudadanas",
+                "description": "Retorna el listado de solicitudes filtrado automáticamente por Rol.",
+                "operationId": "710454682359a38d76568e36c6cbe851",
+                "responses": {
+                    "200": {
+                        "description": "Operación exitosa"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Solicitudes"
+                ],
+                "summary": "Registrar una nueva solicitud ciudadana",
+                "description": "Crea una solicitud en la base de datos vinculada al usuario autenticado. Genera el Folio único de forma automática.",
+                "operationId": "fe92316bd8d2e46452c729e51b04fbb6",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "title",
+                                    "description",
+                                    "category",
+                                    "priority",
+                                    "country_code",
+                                    "postal_code",
+                                    "neighborhood"
+                                ],
+                                "properties": {
+                                    "title": {
+                                        "type": "string",
+                                        "example": "Bache crítico en avenida principal"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Falla severa de pavimentación frente al número 450"
+                                    },
+                                    "category": {
+                                        "type": "string",
+                                        "example": "Servicio público"
+                                    },
+                                    "priority": {
+                                        "type": "string",
+                                        "example": "high",
+                                        "enum": [
+                                            "low",
+                                            "medium",
+                                            "high"
+                                        ]
+                                    },
+                                    "country_code": {
+                                        "type": "string",
+                                        "example": "MX"
+                                    },
+                                    "postal_code": {
+                                        "type": "string",
+                                        "example": "58000"
+                                    },
+                                    "neighborhood": {
+                                        "type": "string",
+                                        "example": "Centro Histórico"
+                                    },
+                                    "due_date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-07-15"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Solicitud registrada con éxito"
+                    },
+                    "403": {
+                        "description": "Acción no autorizada para tu rol"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/requests/{id}": {
+            "put": {
+                "tags": [
+                    "Solicitudes"
+                ],
+                "summary": "Actualizar el estatus de una solicitud",
+                "description": "Permite a los revisores cambiar el estatus de una solicitud ciudadana bajo los estados oficiales.",
+                "operationId": "b21ba67df69fbfae64f3af5caf0b58bc",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID primario de la solicitud a modificar",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "status"
+                                ],
+                                "properties": {
+                                    "status": {
+                                        "type": "string",
+                                        "example": "resolved",
+                                        "enum": [
+                                            "received",
+                                            "in_review",
+                                            "resolved",
+                                            "rejected"
+                                        ]
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Estatus actualizado con éxito"
+                    },
+                    "403": {
+                        "description": "Acción no autorizada para tu rol"
+                    },
+                    "404": {
+                        "description": "Solicitud no encontrada"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "sanctum": {
+                "type": "http",
+                "description": "Ingrese el token Bearer generado en el login para acceder a las rutas protegidas",
+                "bearerFormat": "JWT",
+                "scheme": "bearer"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Autenticación",
+            "description": "Autenticación"
+        },
+        {
+            "name": "Catálogos",
+            "description": "Catálogos"
+        },
+        {
+            "name": "Solicitudes",
+            "description": "Solicitudes"
+        }
+    ]
+}

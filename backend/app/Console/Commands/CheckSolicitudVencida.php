@@ -2,27 +2,40 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Attributes\Description;
-use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
-use App\Models\SolicitudCiudadano;
+use App\Models\RequestModel;
+use Carbon\Carbon;
 
-#[Signature('app:check-solicitud-vencida')]
-#[Description('Command description')]
+
 class CheckSolicitudVencida extends Command
 {
-    protected $signature='request:check-solicitud-vencida';
-    protected $description='Verifica y muestra las solicitudes ciudadanas vencidas';
+    /**
+     * @var string
+     */
+    protected $signature = 'requests:check-overdue';
 
-    public function handle(){
-        $overdue=SolicitudCiudadano::where('due_date', '<', now())->whereNotIn('status', ['resolved', 'rejected'])->get();
+    /**
+     * @var string
+     */
+    protected $description = 'Detecta las solicitudes ciudadanas vencidas que siguen abiertas y muestra un resumen.';
 
-        if($overdue->isEmpty()){
-            $this->info('No hay solicitudes vencidas.');
+    public function handle()
+    {
+        $hoy = Carbon::now()->toDateString();
+        // para buscar las solicitudes vencidas 
+        $vencidas = RequestModel::where('due_date', '<', $hoy)
+            ->whereNotIn('status', ['resolved', 'rejected'])
+            ->get();
+        $this->info("Solicitudes vencidas encontradas: " . $vencidas->count());
+        if ($vencidas->isEmpty()) {
+            $this->comment("¡Perfecto! No hay solicitudes atrasadas pendientes.");
             return 0;
+        }
+        foreach ($vencidas as $solicitud) {
+            // Muestra el folio y el título de la solicitud
+            $this->line("{$solicitud->folio} - {$solicitud->title}");
+        }
 
+        return Command::SUCCESS;
     }
-    $this->error("Se encontraron {$overdue->count()} solicitudes vencidas:");
-    $this->table('Folio','Título','Usuario','Fecha de Vencimiento','Estatus', $overdue->map(fn($req)=>[$req->folio, $req->title, $req->status, $req->due_date])->toArray());
-}
 }
